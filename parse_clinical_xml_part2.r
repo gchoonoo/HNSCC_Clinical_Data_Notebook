@@ -40,9 +40,27 @@ for(i in 1:length(dir_folder)){
   
   read.delim(paste("clinical_data_5_9_17_parsed", dir_folder[i],sep="/"), header=F, sep="\t") -> pat_data[[i]]
   
-  pat_data_v2 = pat_data[[i]]
+  #pat_data_v2 = pat_data[[1]]
   
-  pat_data_v2[,1] <- gsub(":","",sapply(strsplit(as.character(pat_data_v2[,1]), "}"),"[",2))
+  pat_data[[i]][,1] <- gsub(":","",sapply(strsplit(as.character(pat_data[[i]][,1]), "}"),"[",2))
+  
+  
+  
+  # fix duplicates
+  if(sum(duplicated(pat_data[[i]][,1])) > 0){
+    
+    duplicates = unique(pat_data[[i]][duplicated(pat_data[[i]][,1]),1])
+    
+    
+    for(a in 1:length(duplicates)){
+      #print(i)
+      pat_data[[i]][pat_data[[i]][,1] %in% duplicates[a],1] <- paste0(pat_data[[i]][pat_data[[i]][,1] %in% duplicates[a],1], seq(1:length(pat_data[[i]][pat_data[[i]][,1] %in% duplicates[a],1])))
+      
+    }
+    
+  }
+  
+  pat_data_v2 = pat_data[[i]]
   
   t(pat_data_v2) -> pat_data_v3
   
@@ -52,11 +70,13 @@ for(i in 1:length(dir_folder)){
   
   pat_data_v3[-1,] -> pat_data_v4
   
+  print(names(pat_data_v4))
+  
   row.names(pat_data_v4) <- pat_data_v4[,"bcr_patient_barcode"]
   
   pat_data[[i]] <- pat_data_v4
   
-  pat_data_names[[i]] <- names(pat_data[[i]])
+  pat_data_names[[i]] <- names(pat_data_v4)
   
 }
 
